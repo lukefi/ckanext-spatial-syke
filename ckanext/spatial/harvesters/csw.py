@@ -15,6 +15,8 @@ from ckanext.harvest.model import HarvestObjectExtra as HOExtra
 from ckanext.spatial.lib.csw_client import CswService
 from ckanext.spatial.harvesters.base import SpatialHarvester, text_traceback
 
+from owslib.fes import PropertyIsLike
+
 
 class CSWHarvester(SpatialHarvester, SingletonPlugin):
     '''
@@ -89,10 +91,26 @@ class CSWHarvester(SpatialHarvester, SingletonPlugin):
         # extract cql filter if any
         cql = self.source_config.get('cql')
 
+        # set filter constraints if any
+
+        filterconstraints = []
+        filter_constraints = self.source_config.get('filter_constraints')
+        if filter_constraints is not None:
+            for fc in filter_constraints:
+                filter_constraint = fc.split(',')
+                const_property = filter_constraint[0]
+                const_operator = filter_constraint[1]
+                const_value = filter_constraint[2]
+                if const_operator == 'Like':
+                    filterconstraints.append(PropertyIsLike(const_property, const_value))
+                else:
+                    log.error('Operator %s is not supported in filter constraints' % const_operator)
+                    continue
+
         log.debug('Starting gathering for %s' % url)
         guids_in_harvest = set()
         try:
-            for identifier in self.csw.getidentifiers(page=10, outputschema=self.output_schema(), cql=cql):
+            for identifier in self.csw.getidentifiers(page=10, outputschema=self.output_schema(), cql=cql, filterconstraints=filterconstraints):
                 try:
                     log.info('Got identifier %s from the CSW', identifier)
                     if identifier is None:
