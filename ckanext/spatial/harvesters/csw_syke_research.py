@@ -90,6 +90,7 @@ class CSWHarvesterSykeResearch(CSWHarvester, SingletonPlugin):
             'guid': harvest_object.guid,
             'spatial_harvester': True,
             'topic_category': iso_values['topic-category'][0],
+            'doi': '',
         }
 
         # Add spatial extent if defined
