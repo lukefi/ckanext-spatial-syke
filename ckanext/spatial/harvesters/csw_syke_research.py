@@ -138,4 +138,10 @@ class CSWHarvesterSykeResearch(CSWHarvester, SingletonPlugin):
 
         package_dict['extras'] = extras_as_dict
 
+        # Add to a group according to the topic category, the groups must exist
+
+        groups = []
+        groups.append({'name': extras['topic_category'].lower()})
+        package_dict['groups'] = groups
+
         return package_dict
